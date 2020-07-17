@@ -35,7 +35,12 @@ module.exports.deleteAccount = async function (user) {
 
 module.exports.createAccount = async function (user) {
     let uid = user.uid;
-    db.collection("userFriends").doc(uid).create({ "requests": [], "friends": [], },);
+    db.collection("userFriends").doc(uid).create(
+        {
+            "requests": [],
+            "friends": []
+        });
+    db.collection("userdata").doc(uid).update({ "lastNotification": "" })
 }
 
 module.exports.manageAdmins = async function (change, context) {
