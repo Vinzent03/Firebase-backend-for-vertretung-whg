@@ -41,11 +41,13 @@ module.exports.addFriendRequest = async function (data, context) {
   var message = {
     notification: {
       title: "Freundesanfrage",
-      body: "Klicke hier",
-    },
-    token: token,
+      body: "Klicke hier, um zu deinen Freundesanfragen zu kommen.",
+    }, data: {
+      reason: "friendRequest",
+      click_action:"FLUTTER_NOTIFICATION_CLICK"
+    }
   };
-  let response = await admin.messaging().send(message);
+  let response = await admin.messaging().sendToDevice(token,message);
 
   console.log(uid + "macht anfrage an" + fullFriendUid);
   return { "code": "SUCCESS", "message": "Anfrage geschickt" }
