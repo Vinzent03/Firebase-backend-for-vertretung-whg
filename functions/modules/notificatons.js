@@ -8,22 +8,21 @@ module.exports.sendNotification = async function (req, res) {
     return db.collection("userdata").get().then(snapshot => {
         return snapshot.forEach(async doc => {
             if (doc.data().notification) {
-                var vertretung = getSubstitute(doc).toString()
-                if (vertretung.length > 0) {
-                    if (doc.data().lastNotification === vertretung) {
+                var substitute = getSubstitute(doc)
+                if (substitute.length > 0) {
+                    if (doc.data().lastNotification.toString() === substitute.toString()) {
                         return
                     }
                     var message = {
                         notification: {
                             title: "Neue Vertretung",
-                            body: vertretung,
+                            body: "-" + substitute.join("\n-"),
                         },
-                        token: doc.data().token,
                     };
                     try {
-                        let response = await admin.messaging().send(message);
-                        return doc.ref.update({
-                            "lastNotification": vertretung,
+                        let response = await admin.messaging().sendToDevice(doc.data().token, message);
+                        doc.ref.update({
+                            "lastNotification": substitute,
                         })
                     } catch (err) {
                         let users = await admin.auth().listUsers();
