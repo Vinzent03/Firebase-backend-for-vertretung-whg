@@ -46,6 +46,19 @@ exports.sendNotification = functions.region("europe-west3").https.onRequest(asyn
   return res.send(await notifications.sendNotification(req, res))
 });
 
+// exports.test = functions.region("europe-west3").https.onRequest(async (req, res) => {
+//   var message = {
+//     notification: {
+//       title: "Freundesanfrage",
+//       body: "sorry",
+//     }, data: {
+//       reason: "friendRequest",
+//       click_action:"FLUTTER_NOTIFICATION_CLICK"
+//     }
+//   };
+//   admin.messaging().sendToDevice("cuBHdaSjRse_IERYr1tVbJ:APA91bHTvADpDiOdyPPB629cXvTMm7N6ZVzs_BDbGDaC9f2o0xSttC-E8AzQejzeXKuF7YgKKN8ZazBlKiGiBN6-ITFvaRmYTeOLG5qyEcDC0qMDktXwsOHMQMXtuTo9ZhfuemrGrL_x",message)
+// });
+
 //news
 exports.addNews = functions.region("europe-west3").https.onCall(async (data, context) => {
   return news.addNews(data, context)

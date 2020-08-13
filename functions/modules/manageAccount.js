@@ -12,11 +12,10 @@ module.exports.deleteAccount = async function (user) {
     db.collection("userFriends").doc(uid).delete();
 
     //delete my requests at other users
-    let lol = db.collection('userFriends');
-    let query = lol.where('requests', "array-contains", uid).get()
+    let userFriendsRef = db.collection('userFriends');
+    let query = userFriendsRef.where('requests', "array-contains", uid).get()
         .then(snapshot => {
             if (snapshot.empty) {
-                console.log('No matching documents.');
                 return;
             }
             return snapshot.forEach(doc => {

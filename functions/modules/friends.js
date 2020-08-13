@@ -49,7 +49,6 @@ module.exports.addFriendRequest = async function (data, context) {
   };
   let response = await admin.messaging().sendToDevice(token,message);
 
-  console.log(uid + "macht anfrage an" + fullFriendUid);
   return { "code": "SUCCESS", "message": "Anfrage geschickt" }
 }
 

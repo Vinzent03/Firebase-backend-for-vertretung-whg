@@ -10,9 +10,15 @@ module.exports.sendNotification = async function (req, res) {
             if (doc.data().notification) {
                 var substitute = getSubstitute(doc)
                 if (substitute.length > 0) {
+                    let isNew = false;
                     if (doc.data().lastNotification.toString() === substitute.toString()) {
                         return
                     }
+                    substitute.forEach((newSubs) => {
+                        if (!doc.data().lastNotification.includes(newSubs)) {
+                            isNew = true;
+                        }
+                    })
                     var message = {
                         notification: {
                             title: "Neue Vertretung",
@@ -20,7 +26,8 @@ module.exports.sendNotification = async function (req, res) {
                         },
                     };
                     try {
-                        let response = await admin.messaging().sendToDevice(doc.data().token, message);
+                        if (isNew)
+                            await admin.messaging().sendToDevice(doc.data().token, message);
                         doc.ref.update({
                             "lastNotification": substitute,
                         })
