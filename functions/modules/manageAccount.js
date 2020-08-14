@@ -49,12 +49,19 @@ module.exports.manageAdmins = async function (change, context) {
 
     let dataAdd = newValue.filter(x => !previousValue.includes(x));
     let dataDelete = previousValue.filter(x => !newValue.includes(x));
-
-    if (dataAdd.length > 0) {
-        await admin.auth().setCustomUserClaims(dataAdd[0], { "admin": true })
-        return console.log(dataAdd + " ist jetzt admin")
-    } else if (dataDelete.length > 0) {
-        await admin.auth().setCustomUserClaims(dataDelete[0], { "admin": false })
-        return console.log(dataDelete + " ist kein admin mehr")
+    try {
+        if (dataAdd.length > 0) {
+            await admin.auth().setCustomUserClaims(dataAdd[0], { "admin": true })
+            return console.log(dataAdd + " ist jetzt admin")
+        } else if (dataDelete.length > 0) {
+            await admin.auth().setCustomUserClaims(dataDelete[0], { "admin": false })
+            return console.log(dataDelete + " ist kein admin mehr")
+        }
+    } catch (error) {
+        if (dataAdd.length > 0)
+            return console.log("Fehler! Vermutlich existiert Nutzer '" + dataAdd + "' nicht");
+        else
+            return console.log("Fehler! Vermutlich existiert Nutzer '" + dataDelete + "' nicht");
     }
+
 }
