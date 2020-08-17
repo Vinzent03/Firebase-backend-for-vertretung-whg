@@ -8,7 +8,7 @@ module.exports.checker = function checker(schoolClass, listToday, subjects, subj
     var stk = part.toLowerCase();
     if (stk.includes("std.")) {
       if (b === 1) {
-        listWithoutClasses.push(part + "\n");
+        listWithoutClasses.push(part);
       }
     } else {
       if (stk.includes(schoolClass)) {
@@ -18,7 +18,7 @@ module.exports.checker = function checker(schoolClass, listToday, subjects, subj
       }
     }
   });
-  
+
   if (personalSubstitute) {
     return betterformatting(checkerFaecher(listWithoutClasses, subjects, subjectsNot));
   } else {

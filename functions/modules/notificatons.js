@@ -41,6 +41,8 @@ module.exports.sendNotification = async function (req, res) {
                                     }
                                 }
                             })
+                        } else {
+                            throw err;
                         }
                     }
                 }
