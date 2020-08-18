@@ -14,11 +14,26 @@ module.exports.sendNotification = async function (req, res) {
                     if (doc.data().lastNotification.toString() === substitute.toString()) {
                         return
                     }
+                    let formattedLastNotification = [];
+                    let formattedSubstitute = [];
+                    doc.data().lastNotification.forEach(lastNotification => {
+                        if (lastNotification.includes("Std."))
+                            lastNotification = lastNotification.substring(lastNotification.indexOf("Std.") + 5);
+                        formattedLastNotification.push(lastNotification);
+                    });
                     substitute.forEach((newSubs) => {
-                        if (!doc.data().lastNotification.includes(newSubs)) {
+                        if (newSubs.includes("Std."))
+                            newSubs = newSubs.substring(newSubs.indexOf("Std.") + 5)
+                        formattedSubstitute.push(newSubs);
+                    });
+
+
+                    formattedSubstitute.forEach((newSubs) => {
+                        if (!formattedLastNotification.includes(newSubs)) {
                             isNew = true;
                         }
                     })
+
                     var message = {
                         notification: {
                             title: "Neue Vertretung",
