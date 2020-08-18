@@ -16,16 +16,9 @@ const notifications = require("./modules/notificatons")
 const news = require("./modules/news")
 
 //friends
-exports.addFriendRequest = functions.region("europe-west3").https.onCall(async (data, context) => {
-  return friends.addFriendRequest(data, context)
-});
 
-exports.acceptFriendRequest = functions.region("europe-west3").https.onCall(async (data, context) => {
-  return friends.acceptFriendRequest(data, context)
-});
-
-exports.declineFriendRequest = functions.region("europe-west3").https.onCall(async (data, context) => {
-  return friends.declineFriendRequest(data, context)
+exports.addFriend = functions.region("europe-west3").https.onCall(async (data, context) => {
+  return friends.addFriend(data, context)
 });
 
 //account
@@ -45,19 +38,6 @@ exports.manageAdmins = functions.region("europe-west3").firestore.document("deta
 exports.sendNotification = functions.region("europe-west3").https.onRequest(async (req, res) => {
   return res.send(await notifications.sendNotification(req, res))
 });
-
-// exports.test = functions.region("europe-west3").https.onRequest(async (req, res) => {
-//   var message = {
-//     notification: {
-//       title: "Freundesanfrage",
-//       body: "sorry",
-//     }, data: {
-//       reason: "friendRequest",
-//       click_action:"FLUTTER_NOTIFICATION_CLICK"
-//     }
-//   };
-//   admin.messaging().sendToDevice("cuBHdaSjRse_IERYr1tVbJ:APA91bHTvADpDiOdyPPB629cXvTMm7N6ZVzs_BDbGDaC9f2o0xSttC-E8AzQejzeXKuF7YgKKN8ZazBlKiGiBN6-ITFvaRmYTeOLG5qyEcDC0qMDktXwsOHMQMXtuTo9ZhfuemrGrL_x",message)
-// });
 
 //news
 exports.addNews = functions.region("europe-west3").https.onCall(async (data, context) => {
