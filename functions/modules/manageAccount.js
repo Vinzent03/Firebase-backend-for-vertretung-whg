@@ -1,3 +1,4 @@
+const { firestore } = require("firebase-admin");
 const admin = require("firebase-admin");
 const { user } = require("firebase-functions/lib/providers/auth");
 const db = admin.firestore();
@@ -8,38 +9,18 @@ module.exports.deleteAccount = async function (user) {
     //delete the own settings
     db.collection("userdata").doc(uid).delete()
 
-    //delete the own friends and requests
-    db.collection("userFriends").doc(uid).delete();
-
-    //delete my requests at other users
-    let userFriendsRef = db.collection('userFriends');
-    let query = userFriendsRef.where('requests', "array-contains", uid).get()
-        .then(snapshot => {
-            if (snapshot.empty) {
-                return;
-            }
-            return snapshot.forEach(doc => {
-                let requests = doc.data().requests
-                const index = requests.indexOf(uid);
-
-                requests.splice(index, 1);
-                let usersDocRef = db.collection("userFriends").doc(doc.id);
-
-                usersDocRef.update({ "requests": requests });
-            });
-        })
+    //delete me at other accounts
+    let docs = await db.collection("userdata").where('friends', "array-contains", uid).get();
+    docs.docs.forEach(async (doc) => {
+        doc.ref.update({ "friends": firestore.FieldValue.arrayRemove(uid) })
+    })
 
 
 }
 
 module.exports.createAccount = async function (user) {
     let uid = user.uid;
-    db.collection("userFriends").doc(uid).create(
-        {
-            "requests": [],
-            "friends": []
-        });
-    db.collection("userdata").doc(uid).update({ "lastNotification": "" })
+    db.collection("userdata").doc(uid).update({ "lastNotification": [] })
 }
 
 module.exports.manageAdmins = async function (change, context) {
