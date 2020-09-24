@@ -53,9 +53,12 @@ function checkerFaecher(listWithoutClasses, faecherList, faecherNotList) {
       var stLower = st.toLowerCase();
       faecherList.forEach(fach => {
         fach = fach.toLowerCase();
+        fach = " " + fach + " ";
         var i = 0;
         faecherNotList.forEach(fachNot => {
           fachNot = fachNot.toLowerCase();
+          fachNot = " " + fachNot + " ";
+
           if (stLower.includes("bei")) {
             stLower = stLower.substring(0, stLower.indexOf("bei"));
           }
