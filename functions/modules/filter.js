@@ -53,7 +53,8 @@ function checkerFaecher(listWithoutClasses, faecherList, faecherNotList) {
       var stLower = st.toLowerCase();
       faecherList.forEach(fach => {
         fach = fach.toLowerCase();
-        fach = " " + fach + " ";
+        if (fach !== "")
+          fach = " " + fach + " ";
         var i = 0;
         faecherNotList.forEach(fachNot => {
           fachNot = fachNot.toLowerCase();
@@ -70,10 +71,10 @@ function checkerFaecher(listWithoutClasses, faecherList, faecherNotList) {
               i = 2;
             }
           }
-          if (i === 1) {
-            listWithoutLessons.push(st);
-          }
         })
+        if (i === 1) {
+          listWithoutLessons.push(st);
+        }
       })
     })
   }
