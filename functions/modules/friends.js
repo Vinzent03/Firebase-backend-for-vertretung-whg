@@ -7,18 +7,20 @@ module.exports.addFriend = async function (data, context) {
   let uid = context.auth.uid;
   let fullFriendUid;
   let token;
+  let friendFound = false;
   //get full uid of friend
   let ref1 = await db.collection("userdata").get().then(snapshot => {
     return snapshot.forEach(async doc => {
-      if (doc.id.substring(0, 6).includes(shortFriendUid)) {
+      if (doc.id.startsWith(shortFriendUid)) {
         fullFriendUid = doc.id;
-        token = doc.data().token.toString();
+        token = doc.data().token;
+        friendFound = true;
         return;
       }
     })
   })
 
-  if (token === undefined) {
+  if (!friendFound) {
     return { "code": "EXCEPTION_CANT_FIND_FRIEND", "message": "Diesen Benutzer gibt es nicht" }
   }
 
@@ -38,8 +40,8 @@ module.exports.addFriend = async function (data, context) {
       click_action: "FLUTTER_NOTIFICATION_CLICK"
     }
   }
-
-  admin.messaging().sendToDevice(token, message)
+  if (token !== undefined)
+    admin.messaging().sendToDevice(token, message)
   if (data.addFriendToYourself === "true") {
     db.collection("userdata").doc(uid).update({ "friends": firestore.FieldValue.arrayUnion(fullFriendUid) })
   }
