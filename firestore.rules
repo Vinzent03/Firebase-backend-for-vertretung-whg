@@ -17,6 +17,9 @@ service cloud.firestore {
     match/news/{doc}{
     	allow read: if isAuthenticated();
     }
+    match/details/webapp{
+    	allow read: if isAuthenticated();
+    }
   }
 }
 function isAuthenticated(){

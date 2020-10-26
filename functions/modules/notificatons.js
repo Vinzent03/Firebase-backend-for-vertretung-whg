@@ -2,8 +2,9 @@ const admin = require("firebase-admin");
 const db = admin.firestore();
 
 module.exports.sendNotification = async function (req, res) {
+    updateFirestore(req.query.lastChange, req.query.substituteToday, req.query.substituteTomorrow);
     function getSubstitute(doc) {
-        return require("./filter").checker(doc.data().schoolClass, req.query.substitute, doc.data().subjects, doc.data().subjectsNot, doc.data().personalSubstitute);
+        return require("./filter").checker(doc.data().schoolClass, req.query.substituteToday, doc.data().subjects, doc.data().subjectsNot, doc.data().personalSubstitute);
     }
     let sendNotificationOnFirstChange
     let lastChange = req.query.lastChange.substring(28)
@@ -28,6 +29,9 @@ module.exports.sendNotification = async function (req, res) {
             return await notificationOnChange(substitute, doc)
         })
     });
+}
+async function updateFirestore(lastChange, substituteToday, substituteTomorrow) {
+    db.collection("details").doc("webapp").update({ "lastChange": lastChange, "substituteToday": substituteToday.split("||"), "substituteTomorrow": substituteTomorrow.split("||"), });
 }
 async function notificationOnChange(substitute, doc) {
     let isNew = false;
@@ -63,7 +67,7 @@ async function notificationOnChange(substitute, doc) {
     try {
         if (isNew) {
             await admin.messaging().sendToDevice(doc.data().token, message);
-            console.log(doc.data().name +" alte Vertretung:"+ doc.data().lastNotification + "XXX"+substitute+(doc.data().lastNotification.toString() === substitute.toString()).toString());
+            console.log(doc.data().name + " alte Vertretung:" + doc.data().lastNotification + "XXX" + substitute + (doc.data().lastNotification.toString() === substitute.toString()).toString());
         }
         doc.ref.update({
             "lastNotification": substitute,
