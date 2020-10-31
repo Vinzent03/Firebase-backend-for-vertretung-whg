@@ -30,8 +30,7 @@ function betterformatting(list) {
   list.forEach(st => {
     if (st.includes("bei +")) {
       var beginn = st.substring(0, st.indexOf("bei +") - 1);
-      var end = st.substring(st.indexOf("bei +") + 6);
-      st = beginn + " Entfall " + end;
+      st = beginn + " Entfall";
     }
     betterList.push(st);
   })
