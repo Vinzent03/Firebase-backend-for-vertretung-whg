@@ -7,6 +7,11 @@ async function updateFirestore(lastChange: any, substituteToday: any, substitute
     firestore().collection("details").doc("webapp").update({ "lastChange": lastChange, "substituteToday": substituteToday.split("||"), "substituteTomorrow": substituteTomorrow.split("||"), });
 }
 
+function getDateString() {
+    let date = new Date()
+    return date.getDate() + "." + (date.getMonth() + 1) + "." + date.getFullYear()
+}
+
 async function notificationOnChange(substitute: string[], doc: DocumentSnapshot) {
     let isNew = false;
     if (doc.data()?.lastNotification.toString() === substitute.toString()) {
@@ -37,6 +42,7 @@ async function notificationOnChange(substitute: string[], doc: DocumentSnapshot)
         notification: {
             title: "Neue Vertretung",
             body: substitute.join("\n"),
+            tag: getDateString(),
         },
     };
     try {
