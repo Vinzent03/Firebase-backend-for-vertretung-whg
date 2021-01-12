@@ -6,13 +6,20 @@ import { checker } from "./filter";
 async function updateFirestore(lastChange: any, substituteToday: any, substituteTomorrow: any) {
     firestore().collection("details").doc("webapp").update({ "lastChange": lastChange, "substituteToday": substituteToday.split("||"), "substituteTomorrow": substituteTomorrow.split("||"), });
 }
+function getDataForNotification(data: any) {
+    return {
+        "rawSubstituteToday": data.substituteToday,
+        "rawSubstituteTomorrow": data.substituteTomorrow,
+        "lastChange": data.lastChange
+    }
+}
 
 function getDateString() {
     let date = new Date()
     return date.getDate() + "." + (date.getMonth() + 1) + "." + date.getFullYear()
 }
 
-async function notificationOnChange(substitute: string[], doc: DocumentSnapshot) {
+async function notificationOnChange(substitute: string[], doc: DocumentSnapshot, notificationData: any) {
     let isNew = false;
     if (doc.data()?.lastNotification.toString() === substitute.toString()) {
         return
@@ -44,6 +51,7 @@ async function notificationOnChange(substitute: string[], doc: DocumentSnapshot)
             body: substitute.join("\n"),
             tag: getDateString(),
         },
+        data: notificationData,
     };
     try {
         if (isNew) {
@@ -69,7 +77,7 @@ async function notificationOnChange(substitute: string[], doc: DocumentSnapshot)
     }
 }
 
-async function notificationOnFirstChange(substitute: string[], doc: DocumentSnapshot) {
+async function notificationOnFirstChange(substitute: string[], doc: DocumentSnapshot, notificationData: any) {
     if (!doc.data()?.notificationOnFirstChange)
         return
     let message
@@ -79,6 +87,7 @@ async function notificationOnFirstChange(substitute: string[], doc: DocumentSnap
                 title: "Der Plan wurde aktualisiert",
                 body: substitute.join("\n"),
             },
+            data: notificationData
         };
     else
         message = {
@@ -126,11 +135,11 @@ export async function sendNotification(req: Request) {
         let substitute = checker(doc.data().schoolClass, req.query.substituteToday?.toString() ?? "Not found", doc.data().subjects, doc.data().subjectsNot, doc.data().personalSubstitute);
 
         if (doc.data().notificationOnFirstChange && sendNotificationOnFirstChange)
-            return await notificationOnFirstChange(substitute, doc);
+            return await notificationOnFirstChange(substitute, doc, getDataForNotification(req.query));
         if (doc.data().notification === false)
             return
         if (substitute.length === 0)
             return
-        return await notificationOnChange(substitute, doc);
+        return await notificationOnChange(substitute, doc, getDataForNotification(req.query));
     });
 }
