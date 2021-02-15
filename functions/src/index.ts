@@ -1,10 +1,17 @@
 import { initializeApp } from 'firebase-admin';
 import * as functions from 'firebase-functions';
+import * as fetchData from "./modules/fetchData";
 import * as friends from "./modules/friends";
 import * as manageAccount from "./modules/manageAccount";
 import * as news from "./modules/news";
 import * as notificatíon from "./modules/notification";
 
+// var serviceAccount = require("./vertretung-cred.json");
+
+// initializeApp({
+//     credential: credential.cert(serviceAccount),
+//     databaseURL: "https://vertretung-b5742.firebaseio.com"
+// });
 initializeApp();
 
 export const addFriend = functions.region("europe-west3").https.onCall(async (data, context) => {
@@ -24,7 +31,7 @@ export const manageAdmins = functions.region("europe-west3").firestore.document(
 });
 
 export const sendNotification = functions.region("europe-west3").https.onRequest(async (req, resp) => {
-    resp.send(await notificatíon.sendNotification(req));
+    resp.send(await notificatíon.sendNotification());
 });
 
 export const addNews = functions.region("europe-west3").https.onCall(async (data, context) => {
@@ -39,3 +46,6 @@ export const deleteNews = functions.region("europe-west3").https.onCall(async (d
     return await news.deleteNews(data, context);
 });
 
+export const test = functions.region("europe-west3").https.onRequest(async (req, resp) => {
+    resp.send(await fetchData.fetchData());
+});

@@ -1,28 +1,42 @@
 import { auth, firestore, messaging } from "firebase-admin";
-import { logger, Request } from "firebase-functions";
+import { logger } from "firebase-functions";
 import { DocumentSnapshot } from "firebase-functions/lib/providers/firestore";
+import { fetchData } from "./fetchData";
 import { checker } from "./filter";
 
-async function updateFirestore(lastChange: any, substituteToday: any, substituteTomorrow: any) {
-    firestore().collection("details").doc("webapp").update({ "lastChange": lastChange, "substituteToday": substituteToday.split("||"), "substituteTomorrow": substituteTomorrow.split("||"), });
+export interface dsbMobileData {
+    lastChange: string,
+    dayNames: string[],
+    mainDataToday: string[],
+    mainDataTomorrow: string[];
 }
-function getDataForNotification(data: any) {
+async function updateFirestore(data: dsbMobileData) {
+    firestore().collection("details").doc("webapp").update(
+        {
+            "lastChange": data.lastChange,
+            "substituteToday": data.mainDataToday,
+            "substituteTomorrow": data.mainDataTomorrow,
+            "dayNames": data.dayNames,
+        });
+}
+function getDataForNotification(data: dsbMobileData) {
     return {
-        "rawSubstituteToday": data.substituteToday,
-        "rawSubstituteTomorrow": data.substituteTomorrow,
-        "lastChange": data.lastChange
-    }
+        "rawSubstituteToday": data.mainDataToday.join("||"),
+        "rawSubstituteTomorrow": data.mainDataTomorrow.join("||"),
+        "lastChange": data.lastChange,
+        "dayNames": data.dayNames.join("||"),
+    };
 }
 
 function getDateString() {
-    let date = new Date()
-    return date.getDate() + "." + (date.getMonth() + 1) + "." + date.getFullYear()
+    let date = new Date();
+    return date.getDate() + "." + (date.getMonth() + 1) + "." + date.getFullYear();
 }
 
 async function notificationOnChange(substitute: string[], doc: DocumentSnapshot, notificationData: any) {
     let isNew = false;
     if (doc.data()?.lastNotification.toString() === substitute.toString()) {
-        return
+        return;
     }
     let formattedLastNotification: string[] = [];
     let formattedSubstitute: string[] = [];
@@ -34,7 +48,7 @@ async function notificationOnChange(substitute: string[], doc: DocumentSnapshot,
     });
     substitute.forEach(newSubs => {
         if (newSubs.includes("Std."))
-            newSubs = newSubs.substring(newSubs.indexOf("Std.") + 5)
+            newSubs = newSubs.substring(newSubs.indexOf("Std.") + 5);
         formattedSubstitute.push(newSubs);
     });
 
@@ -43,7 +57,7 @@ async function notificationOnChange(substitute: string[], doc: DocumentSnapshot,
         if (!formattedLastNotification.includes(newSubs)) {
             isNew = true;
         }
-    })
+    });
 
     var message = {
         notification: {
@@ -60,17 +74,17 @@ async function notificationOnChange(substitute: string[], doc: DocumentSnapshot,
         }
         doc.ref.update({
             "lastNotification": substitute,
-        })
+        });
     } catch (err) {
         let users = await auth().listUsers();
         if (err.code === "messaging/registration-token-not-registered") {
             users.users.forEach(async (user) => {
                 if (user.uid === doc.id) {
                     if ((await auth().getUser(doc.id)).email === undefined) {
-                        return await auth().deleteUser(user.uid)
+                        return await auth().deleteUser(user.uid);
                     }
                 }
-            })
+            });
         } else {
             throw err;
         }
@@ -79,8 +93,8 @@ async function notificationOnChange(substitute: string[], doc: DocumentSnapshot,
 
 async function notificationOnFirstChange(substitute: string[], doc: DocumentSnapshot, notificationData: any) {
     if (!doc.data()?.notificationOnFirstChange)
-        return
-    let message
+        return;
+    let message;
     if (substitute.length > 0)
         message = {
             notification: {
@@ -101,28 +115,30 @@ async function notificationOnFirstChange(substitute: string[], doc: DocumentSnap
         logger.log(doc.data()?.name + message.notification.title + message.notification.body);
         doc.ref.update({
             "lastNotification": substitute,
-        })
+        });
     } catch (err) {
         let users = await auth().listUsers();
         if (err.code === "messaging/registration-token-not-registered") {
             users.users.forEach(async (user) => {
                 if (user.uid === doc.id) {
                     if ((await auth().getUser(doc.id)).email === undefined) {
-                        return await auth().deleteUser(user.uid)
+                        return await auth().deleteUser(user.uid);
                     }
                 }
-            })
+            });
         } else {
             throw err;
         }
     }
 }
 
-export async function sendNotification(req: Request) {
-    updateFirestore(req.query.lastChange, req.query.substituteToday, req.query.substituteTomorrow);
+export async function sendNotification() {
+    const data = await fetchData();
+
+    updateFirestore(data);
 
     let sendNotificationOnFirstChange: boolean;
-    let lastChange = req.query.lastChange?.toString().substring(28);
+    let lastChange = data.lastChange.toString().substring(28);
     if (lastChange === "00:09") {
         await firestore().collection("details").doc("cloudFunctions").update({ "alreadySendNotificationOnFirstChange": false });
         sendNotificationOnFirstChange = false;
@@ -132,14 +148,14 @@ export async function sendNotification(req: Request) {
     }
 
     (await firestore().collection("userdata").get()).forEach(async doc => {
-        let substitute = checker(doc.data().schoolClass, req.query.substituteToday?.toString() ?? "Not found", doc.data().subjects, doc.data().subjectsNot, doc.data().personalSubstitute);
+        let substitute = checker(doc.data().schoolClass, data.mainDataToday, doc.data().subjects, doc.data().subjectsNot, doc.data().personalSubstitute);
 
         if (doc.data().notificationOnFirstChange && sendNotificationOnFirstChange)
-            return await notificationOnFirstChange(substitute, doc, getDataForNotification(req.query));
+            return await notificationOnFirstChange(substitute, doc, getDataForNotification(data));
         if (doc.data().notification === false)
-            return
+            return;
         if (substitute.length === 0)
-            return
-        return await notificationOnChange(substitute, doc, getDataForNotification(req.query));
+            return;
+        return await notificationOnChange(substitute, doc, getDataForNotification(data));
     });
 }

@@ -1,10 +1,9 @@
-export function checker(schoolClass: string, substituteString: string, subjects: string[], subjectsNot: string[], personalSubstitute: boolean) {
+export function checker(schoolClass: string, substitute: string[], subjects: string[], subjectsNot: string[], personalSubstitute: boolean) {
     //filter the given schoolClass
     var listWithoutClasses: string[] = [];
     var b = 0;
     schoolClass = schoolClass.toLowerCase();
-    let listToday = substituteString.split("||");
-    listToday.forEach(part => {
+    substitute.forEach(part => {
         var stk = part.toLowerCase();
         if (stk.includes("std.")) {
             if (b === 1) {
@@ -33,8 +32,8 @@ function format(list: string[]) {
             st = beginn + " Entfall";
         }
         betterList.push(st);
-    })
-    return betterList
+    });
+    return betterList;
 }
 
 function checkSubject(listWithoutClasses: string[], subjects: string[], subjectsNot: string[]) {
@@ -70,12 +69,12 @@ function checkSubject(listWithoutClasses: string[], subjects: string[], subjects
                             i = 2;
                         }
                     }
-                })
+                });
                 if (i === 1) {
                     listWithoutLessons.push(st);
                 }
-            })
-        })
+            });
+        });
     }
     return listWithoutLessons;
 }
