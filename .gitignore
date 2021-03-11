@@ -70,3 +70,4 @@ node_modules/
 .firebaserc
 functions/package-lock.json
 package-lock.json
+functions/src/modules/links.ts
