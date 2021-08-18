@@ -138,7 +138,8 @@ export async function sendNotification() {
     updateFirestore(data);
 
     let sendNotificationOnFirstChange: boolean;
-    let lastChange = data.lastChange.toString().substring(28);
+    let lastChange = data.lastChange.toString().substring(7);
+
     if (lastChange === "00:09") {
         await firestore().collection("details").doc("cloudFunctions").update({ "alreadySendNotificationOnFirstChange": false });
         sendNotificationOnFirstChange = false;
