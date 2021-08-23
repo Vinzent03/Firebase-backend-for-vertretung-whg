@@ -16,9 +16,9 @@ export async function fetchData(): Promise<dsbMobileData> {
 
     const unformattedLastChange = today("h2").text();
     const mainDataToday = today("td").toArray()
-        .map((e) => e.children[0]?.data).filter(isString);
+        .map((e) => e.children[0]?.data?.trim()).filter(isString);
     const mainDataTomorrow = tomorrow("td").toArray()
-        .map((e) => e.children[0]?.data).filter(isString);
+        .map((e) => e.children[0]?.data?.trim()).filter(isString);
 
     return {
         lastChange: formatLastChange(unformattedLastChange),
