@@ -1,12 +1,11 @@
 import { load } from "cheerio";
 import * as fetch from "node-fetch";
-import { Links } from "./links";
 import { dsbMobileData } from "./notification";
-export async function fetchData(): Promise<dsbMobileData> {
+export async function fetchData(linkToday: string, linkTomorrow: string): Promise<dsbMobileData> {
     const isString = (str: string | undefined): str is string => !!str;
 
-    const responseToday = await fetch.default(Links.substituteLinkToday);
-    const responseTomorrow = await fetch.default(Links.substituteLinkTomorrow);
+    const responseToday = await fetch.default(linkToday);
+    const responseTomorrow = await fetch.default(linkTomorrow);
 
     const htmlToday = await responseToday.text();
     const htmlTomorrow = await responseTomorrow.text();

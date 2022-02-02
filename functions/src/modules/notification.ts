@@ -28,6 +28,11 @@ function getDataForNotification(data: dsbMobileData) {
     };
 }
 
+
+async function getDSBLink(): Promise<firestore.DocumentData> {
+    return (await firestore().collection("details").doc("dsbLinks").get()).data()!;
+}
+
 function getDateString() {
     let date = new Date();
     return date.getDate() + "." + (date.getMonth() + 1) + "." + date.getFullYear();
@@ -133,7 +138,27 @@ async function notificationOnFirstChange(substitute: string[], doc: DocumentSnap
 }
 
 export async function sendNotification() {
-    const data = await fetchData();
+    const links = await getDSBLink();
+    let data = await fetchData(links["dsb_56_today"], links["dsb_56_tomorrow"]);
+    let tempData;
+
+    tempData = await fetchData(links["dsb_79_today"], links["dsb_79_tomorrow"]);
+    data.mainDataToday.push(...tempData.mainDataToday);
+    data.mainDataTomorrow.push(...tempData.mainDataTomorrow);
+
+    tempData = await fetchData(links["dsb_ef_today"], links["dsb_ef_tomorrow"]);
+    data.mainDataToday.push(...tempData.mainDataToday);
+    data.mainDataTomorrow.push(...tempData.mainDataTomorrow);
+
+    tempData = await fetchData(links["dsb_q1_today"], links["dsb_q1_tomorrow"]);
+    data.mainDataToday.push(...tempData.mainDataToday);
+    data.mainDataTomorrow.push(...tempData.mainDataTomorrow);
+
+    tempData = await fetchData(links["dsb_q2_today"], links["dsb_q2_tomorrow"]);
+    data.mainDataToday.push(...tempData.mainDataToday);
+    data.mainDataTomorrow.push(...tempData.mainDataTomorrow);
+
+
 
     updateFirestore(data);
 
@@ -148,7 +173,7 @@ export async function sendNotification() {
         await firestore().collection("details").doc("cloudFunctions").update({ "alreadySendNotificationOnFirstChange": true });
     }
 
-    (await firestore().collection("userdata").get()).forEach(async doc => {
+    (await firestore().collection("userdata").where("token", "!=", null).get()).forEach(async doc => {
         let substitute = checker(doc.data().schoolClass, data.mainDataToday, doc.data().subjects, doc.data().subjectsNot, doc.data().personalSubstitute);
 
         if (doc.data().notificationOnFirstChange && sendNotificationOnFirstChange)

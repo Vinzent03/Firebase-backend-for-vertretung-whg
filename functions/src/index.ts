@@ -1,6 +1,5 @@
 import { initializeApp } from 'firebase-admin';
 import * as functions from 'firebase-functions';
-import * as fetchData from "./modules/fetchData";
 import * as friends from "./modules/friends";
 import * as manageAccount from "./modules/manageAccount";
 import * as news from "./modules/news";
@@ -47,5 +46,5 @@ export const deleteNews = functions.region("europe-west3").https.onCall(async (d
 });
 
 export const test = functions.region("europe-west3").https.onRequest(async (req, resp) => {
-    resp.send(await fetchData.fetchData());
+    // resp.send(await fetchData.fetchData());
 });
